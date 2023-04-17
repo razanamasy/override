@@ -1,0 +1,50 @@
+int main(void)
+{
+  size_t ret;
+  char password [14];
+  char pass_ptr [6];
+  char username [12];
+  int len;
+  FILE *stream_pass;
+
+  stream_pass = (FILE *)0x0;
+  stream_pass = fopen("/home/users/level03/.pass","r");
+  if (stream_pass == (FILE *)0x0) {
+    fwrite("ERROR: failed to open password file\n",1,36,stderr);
+    exit(1);
+  }
+
+  len = fread(pass_ptr,1,41,stream_pass);
+  ret = strcspn((char *)pass_ptr,"\n");
+  pass_ptr[ret] = '\0';
+  if ((int)len != 41) {
+    fwrite("ERROR: failed to read password file\n",1,36,stderr);
+    fwrite("ERROR: failed to read password file\n",1,36,stderr);
+    exit(1);
+  }
+  fclose(stream_pass);
+
+  puts("===== [ Secure Access System v1.0 ] =====");
+  puts("/***************************************\\");
+  puts("| You must login to access this system. |");
+  puts("\\**************************************/");
+  printf("--[ Username: ");
+  fgets((char *)username,100,stdin);
+  ret = strcspn((char *)username,"\n");
+  username[ret] = '\0';
+
+  printf("--[ Password: ");
+  fgets((char *)password,100,stdin);
+  ret = strcspn((char *)password,"\n");
+  password[ret] = '\0';
+  puts("*****************************************");
+  len = strncmp((char *)pass_ptr,(char *)password,41);
+  if (len == 0) {
+    printf("Greetings, %s!\n",username);
+    system("/bin/sh");
+    return 0;
+  }
+  printf((char *)username);
+  puts(" does not have access!");
+  exit(1);
+}

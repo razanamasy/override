@@ -1,0 +1,36 @@
+idee : recuperation de l algo de hash
+
+On voit dans le code source qu’on compare login qui est hash a son serial. 
+etant donne que l’algorithme de hash est en clair on peut l’ecrire dans tmp et l’executer pour avoir la paire login/hash qui nous permet de lancer le bash
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+
+int main(int ac, char **av)
+{
+	int i; // [esp+14h] [ebp-14h]
+	int v4 = 0; // [esp+18h] [ebp-10h]
+	int len; // [esp+1Ch] [ebp-Ch]
+	char s[33];
+
+	strcpy(s, av[1]);
+	len = strnlen(s, 32);
+	if ( len <= 5 )
+		return 1;
+	v4 = (s[3] ^ 0x1337) + 6221293;
+	for ( i = 0; i < len; ++i )
+	{
+		if ( s[i] <= 31 )
+		return 1;
+		v4 += (v4 ^ (unsigned int)s[i]) % 0x539;
+	}
+	printf("%d\n", v4);
+	return 0;
+}
+
+./a.out aaaaaa → login
+6231562 → son hash
+
+cat /home/users/level07/.pass

